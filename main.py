@@ -11,6 +11,6 @@ from neura import TelegramBotConfig, TelegramBotGUI,SplashScreen
 
 if __name__ == "__main__":
     config = TelegramBotConfig()
-    splash = SplashScreen("splash_image.jpg", display_time=3000)
+    splash = SplashScreen("splash_image.jpg", display_time=5000)
     splash.show()
     gui = TelegramBotGUI(config)
