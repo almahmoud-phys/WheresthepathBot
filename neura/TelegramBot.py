@@ -4,9 +4,13 @@ import asyncio
 class TelegramBot:
     def __init__(self, config, user_batch_size, interval, interval_type, selected_users):
         self.loop = asyncio.get_event_loop()
+        # this is bad , we only need one client for all the instances
+        # so I create a client class
+        # use
+        # self.client =  client
+        # TODO : fix this
         self.client = TelegramClient('session_name', config.get('api_id'), config.get('api_hash'), loop=self.loop)
         self.phone = config.get('phone')
-        self.group_id = int(config.get('group_id'))
         self.message_template = config.get('message_template', "This is the default message.")
         self.user_batch_size = user_batch_size
         self.interval = interval
@@ -17,9 +21,6 @@ class TelegramBot:
         self.failure_count = 0
         self.selected_users = selected_users  # List of user IDs to send messages to
 
-    async def start_client(self):
-        if not self.client.is_connected():
-            await self.client.connect()
 
     async def send_reminders(self):
         await self.start_client()

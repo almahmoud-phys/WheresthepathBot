@@ -6,10 +6,11 @@ import csv
 from neura import TelegramBot
 
 class TelegramBotGUI:
-    def __init__(self, config):
+    def __init__(self,root ,  config , client):
+        # TODO : cleint should be passed to the bot
         self.config = config
         self.loop = asyncio.get_event_loop()
-        self.root = tk.Tk()
+        self.root = tk.Toplevel()
         self.root.title("Telegram Bot Configuration")
         self.root.geometry("900x750")  # Set the window size to 750px height
 
@@ -20,7 +21,7 @@ class TelegramBotGUI:
         self.selected_users = self.config.get('selected_users', [])  # Load selected user IDs
 
         self.create_widgets()
-        self.root.mainloop()
+
 
     def create_widgets(self):
         notebook = ttk.Notebook(self.root)
