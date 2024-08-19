@@ -9,4 +9,4 @@ from .TelegramBotGUI import  TelegramBotGUI
 from .TelegramBotConfig import TelegramBotConfig
 from .TelegramBot import TelegramBot
 from .Splash import SplashScreen
-from .TeClient import TeClient
+
