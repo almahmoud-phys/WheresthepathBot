@@ -16,5 +16,5 @@ the TelegramBot Class give three objects :
 ## TODO
 - [ ] switch from **tkinter** to better library since tk doesn't support arabic or  Asynchronous functions
 - [ ] use **pyistaler** to create a standalone executable file
-
+- [ ] Main Window ues Tabs insted of buttons
 
