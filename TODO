@@ -1,3 +1,20 @@
 بسم الله الرحمن الرحيم
-- use pyistaler to create a standalone executable file
-- https://github.com/rdbende/Azure-ttk-theme/issues/55
+
+Splash Window (done)
+
+Set up Window (done)
+	Login Window (done)
+	Choose Group (done)
+	Confirmation Code (done)
+
+Main Window
+	Tabs
+
+		Tools (User and Group ID) (Ongoing)
+		Send Bulk messages (Ongoing)
+		Get all users to excel (done)
+		Get users without ID (Ongoing)
+		Take presence (Ongoing)
+		Setting Up Tab (Ongoing)
+
+
