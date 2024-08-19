@@ -2,13 +2,13 @@
 
 ## Usage
 
-1. pip install requirements.txt
-2. Since the program still in beta you can go to ./neura/Constants.py and chage telegram API parameters
-3. python main.py
+1. `pip install requirements.txt`
+2. Since the program still in beta you can go to [Constants](./neura/Constants.py) and chage telegram API parameters
+3. `python main.py`
 
 ## Contribution
 
-All gui should be in ./neura/TelegramBotGUI.py and work with API in ./neura/TelegramBot.py
+All gui should be in [TelegramBotGUI](./neura/TelegramBotGUI.py) and work with API in [TelegramBot](./neura/TelegramBot.py)
 
 the TelegramBot Class give three objects :
 - admin : is a Telethon client
