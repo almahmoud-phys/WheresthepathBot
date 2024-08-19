@@ -2,7 +2,9 @@
 
 ## Usage
 
-Since the program still in beta you can go to ./neura/Constants.py and chage telegram API parameters
+1. pip install requirements.txt
+2. Since the program still in beta you can go to ./neura/Constants.py and chage telegram API parameters
+3. python main.py
 
 ## Contribution
 

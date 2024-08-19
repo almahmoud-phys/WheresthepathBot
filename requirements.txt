@@ -1,2 +1,3 @@
 Pillow==10.4.0
+py_tgcalls==2.0.3b2
 Telethon==1.36.0
