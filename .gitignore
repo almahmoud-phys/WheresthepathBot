@@ -166,3 +166,7 @@ cython_debug/
 # json and sessions files
 *.json
 *.session
+
+.idea/
+.idea/*
+venv/

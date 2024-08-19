@@ -1,243 +1,254 @@
-import tkinter as tk
-from tkinter import messagebox, scrolledtext
-from tkinter import ttk, filedialog
 import asyncio
-import csv
-from neura import TelegramBot
+import queue
+import tkinter as tk
+from threading import Thread
+from tkinter import messagebox, ttk
+
+from neura.TelegramBot import TelegramBot
+import neura.Constants as Constants
+
+# FIXME ; this class for gui only all method and logic should be in the Bot class
+
 
 class TelegramBotGUI:
-    def __init__(self,root ,  config , client):
-        # TODO : cleint should be passed to the bot
-        self.config = config
+    def __init__(self, root, bot):
+
+        self.updates = None
+        self.q = queue.Queue()
+        self.updated_widget = None
+
         self.loop = asyncio.get_event_loop()
         self.root = tk.Toplevel()
-        self.root.title("Telegram Bot Configuration")
-        self.root.geometry("900x750")  # Set the window size to 750px height
+        # self.root = root
 
-        self.user_batch_size = tk.IntVar(value=20)
-        self.interval = tk.IntVar(value=5)
-        self.interval_type = tk.StringVar(value="minutes")
+        self.root.title("Bot tools")
+        self.config = bot.config
+        self.group = bot.group
+        self.admin = bot.admin
+        self.users = bot.users
+        self.bot = TelegramBot(self.admin, self.group , self.users)
 
-        self.selected_users = self.config.get('selected_users', [])  # Load selected user IDs
-
+        self.styles()
         self.create_widgets()
+        self.check_queue()
 
+    def styles(self):
+        """
+        Initializes the styles for the application.
+        """
+        # Set a minsize for the window, and place it in the middle
+        self.root.update()
+        self.root.minsize(self.root.winfo_width(), self.root.winfo_height())
+        x_cordinate = int(
+            (self.root.winfo_screenwidth() / 2) - (self.root.winfo_width() / 2)
+        )
+        y_cordinate = int(
+            (self.root.winfo_screenheight() / 2) - (self.root.winfo_height() / 2)
+        )
+        self.root.geometry("+{}+{}".format(x_cordinate, y_cordinate - 20))
+
+        # self.root.geometry("500x500")
+        self.root.resizable(True, True)
+        # Configure grid for responsiveness
+        for i in range(3):
+            self.root.grid_columnconfigure(i, weight=1)
+        # for i in range(9):  # Increased to 7 to accommodate the new top widget
+        #     self.root.grid_rowconfigure(i, weight=1)
 
     def create_widgets(self):
-        notebook = ttk.Notebook(self.root)
-        notebook.pack(fill='both', expand=True)
+        """
+        Initializes the main application  widgets.
+        """
 
-        config_frame = ttk.Frame(notebook)
-        users_frame = ttk.Frame(notebook)
+        # Initialize row index
+        self.row_index = 0
 
-        notebook.add(config_frame, text="Configuration")
-        notebook.add(users_frame, text="Group Members")
+        # Top information widget
+        self.create_info_label(f"Group Name: {self.group.title} with {len(self.users)} users")
 
-        self.create_config_tab(config_frame)
-        self.create_users_tab(users_frame)
+        # Separator between top info and first section
+        self.create_separator()
 
-    def create_config_tab(self, frame):
-        # Aligning the widgets for better UI
-        padding = {'padx': 10, 'pady': 5}
+        # First row: Users Management
+        self.create_title("Users Management")
 
-        tk.Label(frame, text="API ID:", font=("Arial", 10, "bold")).grid(row=0, column=0, sticky="e", **padding)
-        self.api_id_entry = tk.Entry(frame)
-        self.api_id_entry.insert(0, self.config.get('api_id', ""))
-        self.api_id_entry.grid(row=0, column=1, **padding, sticky="ew")
-
-        tk.Label(frame, text="API Hash:", font=("Arial", 10, "bold")).grid(row=1, column=0, sticky="e", **padding)
-        self.api_hash_entry = tk.Entry(frame)
-        self.api_hash_entry.insert(0, self.config.get('api_hash', ""))
-        self.api_hash_entry.grid(row=1, column=1, **padding, sticky="ew")
-
-        tk.Label(frame, text="Phone:", font=("Arial", 10, "bold")).grid(row=2, column=0, sticky="e", **padding)
-        self.phone_entry = tk.Entry(frame)
-        self.phone_entry.insert(0, self.config.get('phone', ""))
-        self.phone_entry.grid(row=2, column=1, **padding, sticky="ew")
-
-        tk.Label(frame, text="Group ID:", font=("Arial", 10, "bold")).grid(row=3, column=0, sticky="e", **padding)
-        self.group_id_entry = tk.Entry(frame)
-        self.group_id_entry.insert(0, self.config.get('group_id', ""))
-        self.group_id_entry.grid(row=3, column=1, **padding, sticky="ew")
-
-        tk.Label(frame, text="Message:", font=("Arial", 10, "bold")).grid(row=4, column=0, sticky="ne", **padding)
-        self.message_text = scrolledtext.ScrolledText(frame, wrap=tk.WORD, width=40, height=10)
-        self.message_text.insert(tk.INSERT, self.config.get('message_template', "This is the default message."))
-        self.message_text.grid(row=4, column=1, **padding, sticky="ew")
-
-        tk.Label(frame, text="Users per Batch:", font=("Arial", 10, "bold")).grid(row=5, column=0, sticky="e", **padding)
-        self.user_batch_entry = tk.Entry(frame, textvariable=self.user_batch_size)
-        self.user_batch_entry.grid(row=5, column=1, **padding, sticky="ew")
-
-        tk.Label(frame, text="Interval:", font=("Arial", 10, "bold")).grid(row=6, column=0, sticky="e", **padding)
-        self.interval_entry = tk.Entry(frame, textvariable=self.interval)
-        self.interval_entry.grid(row=6, column=1, **padding, sticky="ew")
-
-        tk.Label(frame, text="Interval Type:", font=("Arial", 10, "bold")).grid(row=7, column=0, sticky="e", **padding)
-        interval_type_menu = tk.OptionMenu(frame, self.interval_type, "seconds", "minutes", "hours")
-        interval_type_menu.grid(row=7, column=1, **padding, sticky="ew")
-
-        # Move Save and Start Bot buttons to the bottom
-        save_button = tk.Button(frame, text="Save", command=self.save_config)
-        save_button.grid(row=8, column=0, columnspan=2, pady=10)
-
-        start_button = tk.Button(frame, text="Send Messages", command=self.start_bot)
-        start_button.grid(row=9, column=0, columnspan=2, pady=10)
-
-        # Make the text boxes fill the width
-        frame.grid_columnconfigure(1, weight=1)
-
-    def create_users_tab(self, frame):
-        self.user_checkboxes = {}
-        self.check_vars = {}
-
-        # Adding padding for buttons
-        button_padding = {'padx': 5, 'pady': 5}
-
-        select_all_button = tk.Button(frame, text="Select All", command=self.select_all)
-        select_all_button.grid(row=0, column=0, sticky="ew", **button_padding)
-
-        clear_all_button = tk.Button(frame, text="Clear All", command=self.clear_all)
-        clear_all_button.grid(row=0, column=1, sticky="ew", **button_padding)
-
-        canvas = tk.Canvas(frame)
-        scrollbar = ttk.Scrollbar(frame, orient="vertical", command=canvas.yview)
-        scrollable_frame = ttk.Frame(canvas)
-
-        scrollable_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(
-                scrollregion=canvas.bbox("all")
-            )
+        self.create_button("Get All Users to Excel", self.export_users, 0)
+        self.create_button(
+            "Get Users without Telegram ID", lambda: self.export_users("no_id"), 1
         )
+        self.create_button("Update Users List", lambda: self.export_users("new"), 2)
 
-        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-        canvas.configure(yscrollcommand=scrollbar.set)
+        self.row_index += 1
+        # Separator between first and second section
+        self.create_separator()
 
-        canvas.grid(row=1, column=0, columnspan=2, sticky="nsew", **button_padding)
-        scrollbar.grid(row=1, column=2, sticky="ns")
+        # Second row: Send Bulk Messages
+        self.create_title("Send Bulk Messages")
+        self.create_button("Send to All Users", lambda: self.send_message("all"), 0)
+        self.create_button("Send to Selected Users", lambda: self.send_message(), 1)
 
-        self.users_frame = scrollable_frame
+        self.row_index += 1
+        # Separator between second and third section
+        self.create_separator()
 
-        self.refresh_button = tk.Button(frame, text="Refresh Users", command=self.refresh_users)
-        self.refresh_button.grid(row=2, column=0, columnspan=2, sticky="ew", pady=10)
+        # Third row: Group Call Attendance
+        self.create_title("Group Call Attendance")
+        self.create_button("get group call presence", self.take_presence, 0)
 
-        save_csv_button = tk.Button(frame, text="Save Selected Users to CSV", command=self.save_to_csv)
-        save_csv_button.grid(row=3, column=0, columnspan=2, sticky="ew", pady=10)
+        self.row_index += 1
 
-        # Adding padding around the list of users
-        frame.grid_rowconfigure(1, weight=1)
-        frame.grid_columnconfigure(1, weight=1)
+        self.create_title("Group Statistics")
+        self.create_button("get group Statistics", self.group_info, 0)
 
-    def validate_and_highlight(self, entry, key):
-        if not entry.get():
-            entry.config(bg="red")
-            return False
-        else:
-            entry.config(bg="white")
-            self.config.set(key, entry.get())
-            return True
+        self.row_index += 1
+        # Separator before bottom buttons
+        self.create_separator()
 
-    def save_config(self):
-        self.update_selected_users()  # Ensure selected_users list is updated
-        valid = True
-        valid &= self.validate_and_highlight(self.api_id_entry, 'api_id')
-        valid &= self.validate_and_highlight(self.api_hash_entry, 'api_hash')
-        valid &= self.validate_and_highlight(self.phone_entry, 'phone')
-        valid &= self.validate_and_highlight(self.group_id_entry, 'group_id')
+        # Bottom buttons: Close, Help, About
+        self.create_bottom_buttons()
 
-        if valid:
-            self.config.set('message_template', self.message_text.get("1.0", tk.END).strip())
-            self.config.set('selected_users', self.selected_users)
-            messagebox.showinfo("Info", "Configuration saved successfully!")
-        else:
-            messagebox.showerror("Error", "Please fill in all the required fields highlighted in red.")
+    # Button click handlers
+    def export_users(self, condition=None):
+        self.bot.export_users(condition)
+        pass
 
-    def start_bot(self):
-        self.update_selected_users()  # Ensure selected_users list is updated
-        self.save_config()
-        if all([self.api_id_entry.get(), self.api_hash_entry.get(), self.phone_entry.get(), self.group_id_entry.get()]):
-            if not self.selected_users:
-                messagebox.showwarning("Warning", "No users selected for messaging.")
-                return
-            bot = TelegramBot(
-                config=self.config,
-                user_batch_size=self.user_batch_size.get(),
-                interval=self.interval.get(),
-                interval_type=self.interval_type.get(),
-                selected_users=self.selected_users
-            )
-            self.run_async(bot.send_reminders())
-        else:
-            messagebox.showerror("Error", "Cannot start bot. Please fill in all the required fields.")
+    def take_presence(self):
+        new_window = tk.Toplevel(self.root)
 
-    def run_async(self, coro):
-        self.loop.run_until_complete(coro)
+        new_window.title("New Window")
+        new_window.geometry("300x200")
 
-    def refresh_users(self):
-        self.run_async(self.fetch_and_display_users())
+        # Content for the new window
+        label = ttk.Label(new_window, text="This is a new window", font=("Arial", 14))
+        label.pack(pady=10)
 
-    async def fetch_and_display_users(self):
-        bot = TelegramBot(
-            config=self.config,
-            user_batch_size=self.user_batch_size.get(),
-            interval=self.interval.get(),
-            interval_type=self.interval_type.get(),
-            selected_users=[]
+        description = ttk.Label(
+            new_window,
+            text=f"""
+            if you click start the bot will start to take presence for all users in the group for the ongoing call , if there is no call the bot will  start a call
+            the presence will be saved in csv file in the { Constants.DEFAULT_DIRICTORY} directory
+            """,
+            wraplength=250,
+            justify="left",
         )
-        members = await bot.get_group_members()
-        for widget in self.users_frame.winfo_children():  # Clear previous checkboxes
-            widget.destroy()
-        self.user_checkboxes = {}
-        self.check_vars = {}
+        description.pack(pady=10)
 
-        row = 0
-        for user_id, username in members.items():
-            var = tk.BooleanVar(value=(user_id in self.selected_users))
-            chk = tk.Checkbutton(self.users_frame, text=f"{username} ({user_id})", variable=var, bg="white")
-            chk.grid(row=row, column=0, sticky="w", padx=10, pady=2)
-            self.user_checkboxes[user_id] = chk
-            self.check_vars[user_id] = var
-            row += 1
 
-    def select_all(self):
-        for var in self.check_vars.values():
-            var.set(True)
-        self.update_selected_users()
+        thread = Thread(target=self.bot.take_presence, args=(self.q,))
 
-    def clear_all(self):
-        for var in self.check_vars.values():
-            var.set(False)
-        self.update_selected_users()
+        close_button = ttk.Button(
+            new_window, text="Start", command=thread.start
+        )
+        close_button.pack(pady=10)
 
-    def update_selected_users(self):
-        self.selected_users = [user_id for user_id, var in self.check_vars.items() if var.get()]
+        close_button = ttk.Button(new_window, text="Close", command=new_window.destroy)
+        close_button.pack(pady=10)
 
-    def send_to_selected(self):
-        self.update_selected_users()
-        messagebox.showinfo("Info", f"Selected {len(self.selected_users)} users for messaging.")
+        information = ttk.Label(
+            new_window,
+            text="number of users is .....",
+            wraplength=250,
+            justify="left",
+        )
+        information.pack(pady=10)
+        self.updated_widget = information
 
-    def save_to_csv(self):
-        self.update_selected_users()  # Ensure the list of selected users is updated
 
-        # Get the list of selected users' IDs and usernames
-        selected_users_data = [{"user_id": user_id, "username": self.user_checkboxes[user_id].cget("text")} for user_id in self.selected_users]
+    def check_queue(self):
+        try:
+            self.updates = self.q.get_nowait()
+            self.updated_widget.config(text=self.updates)
+        except queue.Empty:
+            pass
+        self.root.after(10000, self.check_queue)  # Check the queue again after 100 ms
 
-        if not selected_users_data:
-            messagebox.showwarning("Warning", "No users selected to save.")
-            return
 
-        # Prompt the user to select a save location and filename
-        file_path = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv")])
-        if not file_path:  # User cancelled the save dialog
-            return
+    def group_info(self):
+        self.bot.group_info()
+        pass
 
-        # Save to the chosen CSV file
-        with open(file_path, 'w', newline='') as csvfile:
-            fieldnames = ['user_id', 'username']
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            writer.writeheader()
-            writer.writerows(selected_users_data)
+    def send_message(self, users=None, mesaage=""):
+        # if users ==  "all":
+        #     users = group.users
+        self.bot.send_message(users, mesaage)
+        pass
 
-        messagebox.showinfo("Info", f"Selected users have been saved to {file_path}")
+    def create_info_label(self, text):
+        """
+        Creates an information label at the top of the window.
 
+        Parameters:
+        text (str): The text to display in the information label.
+        """
+        info_label = tk.Label(self.root, text=text)
+        info_label.grid(
+            row=self.row_index,
+            column=0,
+            columnspan=3,
+            pady=(10, 0),
+            padx=5,
+            sticky="ew",
+        )
+        self.row_index += 1
+
+    def create_separator(self):
+        """
+        Creates a separator line between sections.
+        """
+        separator = ttk.Separator(self.root, orient="horizontal")
+        separator.grid(
+            row=self.row_index, column=0, columnspan=3, sticky="ew", pady=(10, 10)
+        )
+        self.row_index += 1
+
+    def create_title(self, text):
+        """
+        Creates a title label spanning across multiple columns.
+
+        Parameters:
+        text (str): The text to display in the title label.
+        """
+        title = tk.Label(self.root, text=text)
+        title.grid(
+            row=self.row_index, column=0, columnspan=3, pady=(10, 0), sticky="ew"
+        )
+        self.row_index += 1
+
+    def create_button(self, text, command, column):
+        """
+        Creates a button with specified text and action.
+
+        Parameters:
+        text (str): The text to display on the button.
+        command (function): The function to call when the button is clicked.
+        column (int): The column in which to place the button in the grid layout.
+        """
+        button = tk.Button(self.root, text=text, command=command)
+        button.grid(row=self.row_index, column=column, padx=10, pady=10, sticky="ew")
+
+    def create_bottom_buttons(self):
+        """
+        Creates a row of buttons at the bottom of the window, including Close, Help, and About.
+        """
+        self.row_index += 1  # Move to the next row for bottom buttons
+
+        close_button = tk.Button(self.root, text="Close", command=self.root.quit)
+        close_button.grid(row=self.row_index, column=0, padx=10, pady=10, sticky="ew")
+
+        help_button = tk.Button(self.root, text="Help", command=self.on_help_click)
+        help_button.grid(row=self.row_index, column=1, padx=10, pady=10, sticky="ew")
+
+        about_button = tk.Button(self.root, text="About", command=self.on_about_click)
+        about_button.grid(row=self.row_index, column=2, padx=10, pady=10, sticky="ew")
+
+    def on_help_click(self):
+        """
+        Displays a help message when the Help button is clicked.
+        """
+        messagebox.showinfo("Help", "This is where you would provide help information.")
+
+    def on_about_click(self):
+        """
+        Displays an about message when the About button is clicked.
+        """
+        messagebox.showinfo("About", "My Tkinter App v1.0\nCreated by [Your Name]")

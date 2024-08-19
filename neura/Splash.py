@@ -1,14 +1,15 @@
 import tkinter as tk
-from PIL import Image, ImageTk
-from tkinter import Toplevel
 
+from PIL import Image, ImageTk
 
 
 class SplashScreen:
-    def __init__(self, root , image_path, display_time=3000):
+    def __init__(self, root, image_path, display_time=3000):
         self.root = root
         self.splash = tk.Toplevel()
-        self.splash.overrideredirect(True)  # Remove window decorations (title bar, etc.)
+        self.splash.overrideredirect(
+            True
+        )  # Remove window decorations (title bar, etc.)
 
         # Load and display the image
         image = Image.open(image_path)  # Replace with your image file path
@@ -20,7 +21,7 @@ class SplashScreen:
         splash_height = photo.height()
         x = (screen_width // 2) - (splash_width // 2)
         y = (screen_height // 2) - (splash_height // 2)
-        self.splash.geometry(f'{splash_width}x{splash_height}+{x}+{y}')
+        self.splash.geometry(f"{splash_width}x{splash_height}+{x}+{y}")
 
         # Create a label to display the image
         label = tk.Label(self.splash, image=photo)
@@ -32,9 +33,9 @@ class SplashScreen:
 
     def close_splash(self):
         self.splash.destroy()
-        # self.root.deiconify()  # Show the main window
+
 
 if __name__ == "__main__":
     root = tk.Tk()
-    splash = SplashScreen(root , "splash_image.jpg", display_time=3000)
+    splash = SplashScreen(root, "splash_image.jpg", display_time=3000)
     splash.show()
