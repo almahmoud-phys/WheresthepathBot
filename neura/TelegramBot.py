@@ -58,6 +58,7 @@ class TelegramBot:
         ut.show_info("Presence taking done")
         print("Presence taking done")
 
+    @async_handler
     async def export_users(self, count):
         participants = await self.client.get_participants(self.group)
         return {user.id: user.username or user.id for user in participants}
