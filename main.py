@@ -10,6 +10,7 @@ import tkinter as tk
 
 import neura.Constants as Constants
 from neura import SplashScreen, TelegramBotConfig, TelegramBotGUI
+from async_tkinter_loop import async_handler, async_mainloop
 
 if __name__ == "__main__":
     if Constants.DEBUG:
@@ -29,7 +30,9 @@ if __name__ == "__main__":
     bot = TelegramBotConfig(root)
 
     gui = TelegramBotGUI(root, bot)
-    root.wait_window(gui.root)
+    # root.wait_window(gui.root)
 
+    # root.mainloop()
+    async_mainloop(root)
     # one root tk object
     # https://www.google.com/search?client=firefox-b-d&q=use+many+root+in+tk

@@ -42,7 +42,7 @@ class TelegramBotConfig:
             print(f"the group is {self.group.title}")
         self.users = self.loop.run_until_complete(self.get_users_list())
         if Constants.DEBUG:
-            print(self.users)
+            # print(self.users)
             print(f"there are {len(self.users)} users ")
 
     def load_config(self):
@@ -205,17 +205,21 @@ class TelegramBotConfig:
             self.group, aggressive=True
         )
         for participant in all_participants:
-            if isinstance( participant.participant , ChannelParticipantCreator) or isinstance( participant.participant , ChannelParticipantAdmin):
-                is_admin = True
-            else:
-                is_admin = False
             # Get the entity (user) using the user ID
-            user = await self.admin.get_entity(participant.id)
-            messages = await self.admin.get_messages(user, limit=1)
-            if messages.total > 0:
+            if Constants.DEBUG:
+                is_admin = False
                 safe_to_send = True
             else:
-                safe_to_send = False
+                if isinstance( participant.participant , ChannelParticipantCreator) or isinstance( participant.participant , ChannelParticipantAdmin):
+                    is_admin = True
+                else:
+                    is_admin = False
+                user = await self.admin.get_entity(participant.id)
+                messages = await self.admin.get_messages(user, limit=1)
+                if messages.total > 0:
+                    safe_to_send = True
+                else:
+                    safe_to_send = False
             users[participant.id] = {
                     "id": participant.id,
                     "username": participant.username,

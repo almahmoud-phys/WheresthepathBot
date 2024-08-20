@@ -9,4 +9,7 @@ from .TelegramBotGUI import  TelegramBotGUI
 from .TelegramBotConfig import TelegramBotConfig
 from .TelegramBot import TelegramBot
 from .Splash import SplashScreen
+from .TelegramBot import TelegramBot
+from .utils import *
+from .Constants import *
 
