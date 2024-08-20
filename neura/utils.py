@@ -1,5 +1,9 @@
 import tkinter as tk
-from tkinter import simpledialog
+from tkinter import messagebox, simpledialog
+
+import arabic_reshaper
+from bidi.algorithm import get_display
+
 
 class SingleChoiceDialog(simpledialog.Dialog):
     def __init__(self, parent, title, options):
@@ -22,3 +26,30 @@ class SingleChoiceDialog(simpledialog.Dialog):
 
     def apply(self):
         self.choice = self.var.get()
+
+
+class Arabic:
+    def display_arabic_text(text):
+        reshaped_text = arabic_reshaper.reshape(text)
+        bidi_text = get_display(reshaped_text)
+        return bidi_text
+
+
+def show_info(msg : str):
+    messagebox.showinfo("Information", msg)
+
+
+def show_warning():
+    messagebox.showwarning("Warning", "This is a warning message.")
+
+
+def show_error():
+    messagebox.showerror("Error", "This is an error message.")
+
+
+def confirm_action():
+    result = messagebox.askyesno("Confirm", "Are you sure you want to proceed?")
+    if result:
+        messagebox.showinfo("Confirmed", "You selected Yes.")
+    else:
+        messagebox.showinfo("Cancelled", "You selected No.")

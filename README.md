@@ -2,7 +2,7 @@
 
 ## Usage
 
-1. `pip install requirements.txt`
+1. `pip install -r requirements.txt`
 2. Since the program still in beta you can go to [Constants](./neura/Constants.py) and chage telegram API parameters
 3. `python main.py`
 
@@ -16,7 +16,7 @@ the TelegramBot Class give three objects :
 - users : all users in that goup
 
 ## TODO
-- [ ] switch from **tkinter** to better library since tk doesn't support arabic or  Asynchronous functions
+- [ ] ~switch from **tkinter** to better library since tk doesn't support arabic or  Asynchronous functions~ , we find a workaround using tkinter
 - [ ] use **pyistaler** to create a standalone executable file
 - [ ] Main Window ues Tabs insted of buttons
 

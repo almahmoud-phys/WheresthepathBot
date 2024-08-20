@@ -1,36 +1,43 @@
 import asyncio
-import queue
 import tkinter as tk
 from threading import Thread
-from tkinter import messagebox, ttk
+from tkinter import ttk
 
-from neura.TelegramBot import TelegramBot
+from tkinter import messagebox
+
+# to test the gui without the full runing of the script , just run this file and it will work
+# python TelegramBotGUI.py
+##
+if __name__ == "__main__":
+    import sys
+    sys.path.append("../")
+
 import neura.Constants as Constants
-
+from neura.TelegramBot import TelegramBot
+from neura.utils import Arabic as ar
+from async_tkinter_loop import async_handler, async_mainloop
 # FIXME ; this class for gui only all method and logic should be in the Bot class
 
 
 class TelegramBotGUI:
     def __init__(self, root, bot):
-
-        self.updates = None
-        self.q = queue.Queue()
-        self.updated_widget = None
-
         self.loop = asyncio.get_event_loop()
-        self.root = tk.Toplevel()
         # self.root = root
 
-        self.root.title("Bot tools")
-        self.config = bot.config
-        self.group = bot.group
-        self.admin = bot.admin
-        self.users = bot.users
-        self.bot = TelegramBot(self.admin, self.group , self.users)
+        if bot is not None:
+            self.root = tk.Toplevel()
+            self.config = bot.config
+            self.group = bot.group
+            self.admin = bot.admin
+            self.users = bot.users
+            self.bot = TelegramBot(self.admin, self.group, self.users)
+        else:
+            self.root = root
+        title = ar.display_arabic_text("بوت برنامج أين الطريق")
+        self.root.title(title)
 
         self.styles()
         self.create_widgets()
-        self.check_queue()
 
     def styles(self):
         """
@@ -45,15 +52,49 @@ class TelegramBotGUI:
         y_cordinate = int(
             (self.root.winfo_screenheight() / 2) - (self.root.winfo_height() / 2)
         )
-        self.root.geometry("+{}+{}".format(x_cordinate, y_cordinate - 20))
+        # self.root.geometry("+{}+{}".format(x_cordinate, y_cordinate - 20))
 
         # self.root.geometry("500x500")
         self.root.resizable(True, True)
         # Configure grid for responsiveness
         for i in range(3):
             self.root.grid_columnconfigure(i, weight=1)
-        # for i in range(9):  # Increased to 7 to accommodate the new top widget
-        #     self.root.grid_rowconfigure(i, weight=1)
+
+        self.primary_color = "#6200EE"  # Deep Purple 500
+        self.primary_variant_color = "#3700B3"  # Deep Purple 700
+        self.secondary_color = "#03DAC6"  # Teal 200
+        self.background_color = "#ECEFF1"  # Grey 200 (New Background)
+        self.text_primary_color = "#212121"  # Grey 900
+        self.text_secondary_color = "#ECEFF1"  # Grey 600
+        self.divider_color = "#BDBDBD"  # Grey 400
+
+        # Apply general styles
+        self.style = ttk.Style()
+        self.style.configure(
+            "TLabel",
+            font=("Roboto", 14, "bold"),
+            # foreground=self.text_primary_color,
+            # background=self.background_color,
+        )
+        self.style.configure(
+            "TButton",
+            font=("Roboto", 12, "bold"),
+            # foreground="#FFFFFF",
+            background=self.primary_color,
+            padding=10,
+        )
+        # self.style.map(
+        #     "TButton",
+        #     foreground=[("active", "#FFFFFF")],
+        #     background=[("active", self.primary_variant_color)],
+        # )
+
+        self.style.configure("TCheckbutton",
+                font=('Arial', 12),
+                padding=6)
+        self.style.configure("TSeparator", background=self.divider_color)
+
+        # self.root.configure(bg=self.background_color)
 
     def create_widgets(self):
         """
@@ -64,7 +105,10 @@ class TelegramBotGUI:
         self.row_index = 0
 
         # Top information widget
-        self.create_info_label(f"Group Name: {self.group.title} with {len(self.users)} users")
+        self.create_info_label(
+            # f"Group Name: {self.group.title} with {len(self.users)} users"
+            "بوت برنامج أين الطريق"
+        )
 
         # Separator between top info and first section
         self.create_separator()
@@ -84,15 +128,15 @@ class TelegramBotGUI:
 
         # Second row: Send Bulk Messages
         self.create_title("Send Bulk Messages")
-        self.create_button("Send to All Users", lambda: self.send_message("all"), 0)
-        self.create_button("Send to Selected Users", lambda: self.send_message(), 1)
+        self.create_button("Send to All Users", self.send_message, 0)
 
         self.row_index += 1
         # Separator between second and third section
         self.create_separator()
 
         # Third row: Group Call Attendance
-        self.create_title("Group Call Attendance")
+        text = "تسجيل حضور المدارسة"
+        self.create_title(text)
         self.create_button("get group call presence", self.take_presence, 0)
 
         self.row_index += 1
@@ -104,83 +148,120 @@ class TelegramBotGUI:
         # Separator before bottom buttons
         self.create_separator()
 
-        # Bottom buttons: Close, Help, About
-        self.create_bottom_buttons()
-
     # Button click handlers
     def export_users(self, condition=None):
-        self.bot.export_users(condition)
-        pass
-
-    def take_presence(self):
+        # Create a new window for the task
         new_window = tk.Toplevel(self.root)
-
-        new_window.title("New Window")
-        new_window.geometry("300x200")
 
         # Content for the new window
         label = ttk.Label(new_window, text="This is a new window", font=("Arial", 14))
-        label.pack(pady=10)
 
-        description = ttk.Label(
-            new_window,
-            text=f"""
-            if you click start the bot will start to take presence for all users in the group for the ongoing call , if there is no call the bot will  start a call
-            the presence will be saved in csv file in the { Constants.DEFAULT_DIRICTORY} directory
-            """,
-            wraplength=250,
-            justify="left",
-        )
-        description.pack(pady=10)
+        pass
 
+    def take_presence(self):
+        # Create a new window for the task
+        new_window = tk.Toplevel(self.root)
 
-        thread = Thread(target=self.bot.take_presence, args=(self.q,))
+        for i in range(2):
+            new_window.grid_columnconfigure(i, weight=1)
+        # Content for the new window
 
-        close_button = ttk.Button(
-            new_window, text="Start", command=thread.start
-        )
-        close_button.pack(pady=10)
-
-        close_button = ttk.Button(new_window, text="Close", command=new_window.destroy)
-        close_button.pack(pady=10)
-
-        information = ttk.Label(
-            new_window,
-            text="number of users is .....",
-            wraplength=250,
-            justify="left",
-        )
-        information.pack(pady=10)
-        self.updated_widget = information
+        self.create_title("تسجيل حضور المدارسة" , new_window)
 
 
-    def check_queue(self):
-        try:
-            self.updates = self.q.get_nowait()
-            self.updated_widget.config(text=self.updates)
-        except queue.Empty:
-            pass
-        self.root.after(10000, self.check_queue)  # Check the queue again after 100 ms
+        self.create_info_label("عدد الحاضرين للمدارسة", new_window)
+
+
+        information = self.create_info_label("", new_window)
+
+        def on_update(result):
+            information.config(text=ar.display_arabic_text(f"{result}"))
+        def start():
+            async_handler(self.bot.take_presence_async(on_update ))
+
+        self.create_button("Start", start, 0 , new_window)
+        self.create_button("Stop",new_window.destroy, 1,new_window)
 
 
     def group_info(self):
         self.bot.group_info()
         pass
 
-    def send_message(self, users=None, mesaage=""):
-        # if users ==  "all":
-        #     users = group.users
-        self.bot.send_message(users, mesaage)
+    def send_message(self):
+        # Create a new window for the task
+        new_window = tk.Toplevel(self.root)
+        self.row_index = 0
+
+        for i in range(2):
+            new_window.grid_columnconfigure(i, weight=1)
+        # Content for the new window
+
+        self.create_title("إرسال رسالة" , new_window)
+
+
+        self.create_label("Recipients (one per line):",1, 0, new_window)
+        self.create_label("نص الرسالة",1, 1, new_window)
+
+        send_to_all = tk.BooleanVar()
+        send_to_mutual_contact = tk.BooleanVar()
+
+
+        def update_list():
+            if send_to_all.get():
+                print(self.users)
+                print(type(self.users))
+                users_id = [f"@{self.users[id]["username"]}" for  id in self.users]
+                recipient_text.delete("1.0", tk.END)
+                recipient_text.insert(tk.END, "\n".join(users_id))
+            elif send_to_mutual_contact.get():
+                recipient_text.delete("1.0", tk.END)
+                recipient_text.insert(tk.END, "\n".join(self.users))
+        self.create_checkbutton("Send to All Contacts",update_list, send_to_all,2,0, new_window)
+        self.create_checkbutton("Send to Favorites",update_list,  send_to_mutual_contact,3,0, new_window)
+
+        recipient_text = self.create_text(40, 10,4,  0, new_window)
+        message_text = self.create_text(40, 10,4,  1, new_window)
+
+
+        def on_update(result):
+            information.config(text=ar.display_arabic_text(f"{result}"))
+        def start():
+            recipients = recipient_text.get("1.0", tk.END).strip().split('\n')
+            message = message_text.get("1.0", tk.END)
+
+            if not recipients  or not message.strip():
+                messagebox.showwarning("Input Error", "All fields must be filled out")
+                return
+            async_handler(self.bot.send_message(recipients, message.strip(), on_update))
+
+        self.row_index += 12
+        self.create_button("Send", start, 0 , new_window)
+        self.row_index += 1
+        information = self.create_info_label("", new_window)
         pass
 
-    def create_info_label(self, text):
+    def create_checkbutton(self, text, command,variable ,row , column,  root=None):
+        text = ar.display_arabic_text(text)
+        checkbutton = ttk.Checkbutton(root, text=text, variable=variable, command=command, style="TCheckbutton")
+        checkbutton.grid(row=row, column=column, padx=10, pady=5,  sticky="ew")
+        return checkbutton
+
+    def create_text(self, width, height, row , column, root=None):
+        text_widget = tk.Text(root, width=width, height=height)
+        text_widget.grid(row=row, column=column, padx=10, pady=5, sticky="nsew")
+        return text_widget
+
+    def create_info_label(self, text="" , root=None):
         """
         Creates an information label at the top of the window.
 
         Parameters:
         text (str): The text to display in the information label.
         """
-        info_label = tk.Label(self.root, text=text)
+        if root is None:
+            root = self.root
+        text = ar.display_arabic_text(text)
+        info_label = ttk.Label(root, text=text, style="TLabel", anchor="center")
         info_label.grid(
             row=self.row_index,
             column=0,
@@ -190,31 +271,52 @@ class TelegramBotGUI:
             sticky="ew",
         )
         self.row_index += 1
+        return info_label
 
-    def create_separator(self):
+    def create_label(self, text,row, column, root=None):
+        """
+        Creates a label with specified text.
+
+        Parameters:
+        text (str): The text to display in the label.
+        column (int): The column in which to place the label in the grid layout.
+        """
+        if root is None:
+            root = self.root
+        text = ar.display_arabic_text(text)
+        label = ttk.Label(root, text=text, style="TLabel")
+        label.grid(row=row, column=column, padx=10, pady=5, sticky="ew")
+        return label
+
+    def create_separator(self, root=None):
         """
         Creates a separator line between sections.
         """
-        separator = ttk.Separator(self.root, orient="horizontal")
+        if root is None:
+            root = self.root
+        separator = ttk.Separator(root, orient="horizontal")
         separator.grid(
             row=self.row_index, column=0, columnspan=3, sticky="ew", pady=(10, 10)
         )
         self.row_index += 1
 
-    def create_title(self, text):
+    def create_title(self, text , root=None):
         """
         Creates a title label spanning across multiple columns.
 
         Parameters:
         text (str): The text to display in the title label.
         """
-        title = tk.Label(self.root, text=text)
+        if root is None:
+            root = self.root
+        text = ar.display_arabic_text(text)
+        title = ttk.Label(root, text=text, style="TLabel", anchor="center")
         title.grid(
             row=self.row_index, column=0, columnspan=3, pady=(10, 0), sticky="ew"
         )
         self.row_index += 1
 
-    def create_button(self, text, command, column):
+    def create_button(self, text, command, column , root=None ):
         """
         Creates a button with specified text and action.
 
@@ -223,32 +325,14 @@ class TelegramBotGUI:
         command (function): The function to call when the button is clicked.
         column (int): The column in which to place the button in the grid layout.
         """
-        button = tk.Button(self.root, text=text, command=command)
+        if root is None:
+            root = self.root
+        text = ar.display_arabic_text(text)
+        button = ttk.Button(root, text=text, command=command, style="TButton")
         button.grid(row=self.row_index, column=column, padx=10, pady=10, sticky="ew")
 
-    def create_bottom_buttons(self):
-        """
-        Creates a row of buttons at the bottom of the window, including Close, Help, and About.
-        """
-        self.row_index += 1  # Move to the next row for bottom buttons
 
-        close_button = tk.Button(self.root, text="Close", command=self.root.quit)
-        close_button.grid(row=self.row_index, column=0, padx=10, pady=10, sticky="ew")
-
-        help_button = tk.Button(self.root, text="Help", command=self.on_help_click)
-        help_button.grid(row=self.row_index, column=1, padx=10, pady=10, sticky="ew")
-
-        about_button = tk.Button(self.root, text="About", command=self.on_about_click)
-        about_button.grid(row=self.row_index, column=2, padx=10, pady=10, sticky="ew")
-
-    def on_help_click(self):
-        """
-        Displays a help message when the Help button is clicked.
-        """
-        messagebox.showinfo("Help", "This is where you would provide help information.")
-
-    def on_about_click(self):
-        """
-        Displays an about message when the About button is clicked.
-        """
-        messagebox.showinfo("About", "My Tkinter App v1.0\nCreated by [Your Name]")
+if __name__ == "__main__":
+    root = tk.Tk()
+    bot = TelegramBotGUI(root, None)
+    root.mainloop()
