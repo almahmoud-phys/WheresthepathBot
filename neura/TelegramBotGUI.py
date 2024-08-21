@@ -1,6 +1,5 @@
 import asyncio
 import tkinter as tk
-from threading import Thread
 from tkinter import ttk
 
 from tkinter import messagebox
@@ -15,8 +14,7 @@ if __name__ == "__main__":
 import neura.Constants as Constants
 from neura.TelegramBot import TelegramBot
 from neura.utils import Arabic as ar
-from async_tkinter_loop import async_handler, async_mainloop
-# FIXME ; this class for gui only all method and logic should be in the Bot class
+from async_tkinter_loop import async_handler
 
 
 class TelegramBotGUI:
@@ -40,22 +38,15 @@ class TelegramBotGUI:
         self.create_widgets()
 
     def styles(self):
+        #TODO: we need a good lock and feel for the app
         """
         Initializes the styles for the application.
         """
         # Set a minsize for the window, and place it in the middle
         self.root.update()
         self.root.minsize(self.root.winfo_width(), self.root.winfo_height())
-        x_cordinate = int(
-            (self.root.winfo_screenwidth() / 2) - (self.root.winfo_width() / 2)
-        )
-        y_cordinate = int(
-            (self.root.winfo_screenheight() / 2) - (self.root.winfo_height() / 2)
-        )
-        # self.root.geometry("+{}+{}".format(x_cordinate, y_cordinate - 20))
-
-        # self.root.geometry("500x500")
         self.root.resizable(True, True)
+
         # Configure grid for responsiveness
         for i in range(3):
             self.root.grid_columnconfigure(i, weight=1)
@@ -97,6 +88,10 @@ class TelegramBotGUI:
         # self.root.configure(bg=self.background_color)
 
     def create_widgets(self):
+        #TODO : switch to tabs
+        #TODO : add a menu bar
+        #TODO : translate the text to arabic
+
         """
         Initializes the main application  widgets.
         """
@@ -150,7 +145,8 @@ class TelegramBotGUI:
 
     # Button click handlers
     def export_users(self, condition=None):
-        # Create a new window for the task
+        #TODO: Create a new window for the task
+
         new_window = tk.Toplevel(self.root)
 
         # Content for the new window
@@ -159,31 +155,32 @@ class TelegramBotGUI:
         pass
 
     def take_presence(self):
-        # Create a new window for the task
-        new_window = tk.Toplevel(self.root)
 
+        # new windows
+        new_window = tk.Toplevel(self.root)
         for i in range(2):
             new_window.grid_columnconfigure(i, weight=1)
         # Content for the new window
-
         self.create_title("تسجيل حضور المدارسة" , new_window)
-
-
         self.create_info_label("عدد الحاضرين للمدارسة", new_window)
-
-
         information = self.create_info_label("", new_window)
 
+        # function to update the information label
         def on_update(result):
             information.config(text=ar.display_arabic_text(f"{result}"))
+
+        # function to start the process
         def start():
             async_handler(self.bot.take_presence_async(on_update ))
-
         self.create_button("Start", start, 0 , new_window)
         self.create_button("Stop",new_window.destroy, 1,new_window)
 
 
     def group_info(self):
+        # new windows
+        new_window = tk.Toplevel(self.root)
+
+        # functions
         self.bot.group_info()
         pass
 
@@ -192,13 +189,10 @@ class TelegramBotGUI:
         new_window = tk.Toplevel(self.root)
         self.row_index = 0
 
+        # Content for the new window
         for i in range(2):
             new_window.grid_columnconfigure(i, weight=1)
-        # Content for the new window
-
         self.create_title("إرسال رسالة" , new_window)
-
-
         self.create_label("Recipients (one per line):",1, 0, new_window)
         self.create_label("نص الرسالة",1, 1, new_window)
 
@@ -222,7 +216,6 @@ class TelegramBotGUI:
         recipient_text = self.create_text(40, 10,4,  0, new_window)
         message_text = self.create_text(40, 10,4,  1, new_window)
 
-
         def on_update(result):
             information.config(text=ar.display_arabic_text(f"{result}"))
         def start():
@@ -239,6 +232,11 @@ class TelegramBotGUI:
         self.row_index += 1
         information = self.create_info_label("", new_window)
         pass
+
+
+    # Widget creation functions
+    #NOTE: All widgets use the grid layout manager
+    # it's easyto use and it's the best for this kind of app
 
     def create_checkbutton(self, text, command,variable ,row , column,  root=None):
         text = ar.display_arabic_text(text)
@@ -332,6 +330,7 @@ class TelegramBotGUI:
         button.grid(row=self.row_index, column=column, padx=10, pady=10, sticky="ew")
 
 
+# Run the GUI if the script is run directly
 if __name__ == "__main__":
     root = tk.Tk()
     bot = TelegramBotGUI(root, None)
