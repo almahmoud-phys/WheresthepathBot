@@ -171,7 +171,7 @@ class TelegramBotGUI:
 
         # function to start the process
         def start():
-            async_handler(self.bot.take_presence_async(on_update ))
+            async_handler(self.bot.take_presence(on_update ))
         self.create_button("Start", start, 0 , new_window)
         self.create_button("Stop",new_window.destroy, 1,new_window)
 
