@@ -111,19 +111,15 @@ class TelegramBotGUI:
         # First row: Users Management
         self.create_title("Users Management")
 
-        self.create_button("Get All Users to Excel", self.export_users, 0)
-        self.create_button(
-            "Get Users without Telegram ID", lambda: self.export_users("no_id"), 1
-        )
-        self.create_button("Update Users List", lambda: self.export_users("new"), 2)
+        self.create_button("معلومات المجموعة و أعضاء المجموعة", self.export_users, 0)
 
         self.row_index += 1
         # Separator between first and second section
         self.create_separator()
 
         # Second row: Send Bulk Messages
-        self.create_title("Send Bulk Messages")
-        self.create_button("Send to All Users", self.send_message, 0)
+        self.create_title("Send Messages")
+        self.create_button("إرسال رسائل للأعضاء", self.send_message, 0)
 
         self.row_index += 1
         # Separator between second and third section
@@ -132,29 +128,44 @@ class TelegramBotGUI:
         # Third row: Group Call Attendance
         text = "تسجيل حضور المدارسة"
         self.create_title(text)
-        self.create_button("get group call presence", self.take_presence, 0)
+        self.create_button("تسجيل حضور المدارسة", self.take_presence, 0)
 
         self.row_index += 1
 
-        self.create_title("Group Statistics")
-        self.create_button("get group Statistics", self.group_info, 0)
-
-        self.row_index += 1
         # Separator before bottom buttons
         self.create_separator()
 
     # Button click handlers
-    def export_users(self, condition=None):
+    def export_users(self):
         #TODO: Create a new window for the task
+
+        # reset the row index
+        self.row_index = 0
 
         new_window = tk.Toplevel(self.root)
 
         # Content for the new window
-        label = ttk.Label(new_window, text="This is a new window", font=("Arial", 14))
+        self.create_title("إستخراج معلومات الأعضاء" , new_window)
 
+        # update the information label
+        def on_update(result):
+            information.config(text=ar.display_arabic_text(f"{result}"))
+        # function to start the process
+        def start():
+            # update the information label
+            information.config(text=ar.display_arabic_text("جاري العملية"))
+
+            # start the process of taking the presence using the bot object and  async_handler to not block the main thread
+            async_handler(self.bot.export_users(on_update ))
+
+        self.row_index += 1
+        self.create_button("Start", start, 0 , new_window)
+        self.row_index += 1
+        information = self.create_info_label("", new_window)
         pass
 
     def take_presence(self):
+
 
         # new windows
         new_window = tk.Toplevel(self.root)
@@ -171,18 +182,11 @@ class TelegramBotGUI:
 
         # function to start the process
         def start():
+            # start the process of taking the presence using the bot object and  async_handler to not block the main thread
             async_handler(self.bot.take_presence(on_update ))
+
         self.create_button("Start", start, 0 , new_window)
         self.create_button("Stop",new_window.destroy, 1,new_window)
-
-
-    def group_info(self):
-        # new windows
-        new_window = tk.Toplevel(self.root)
-
-        # functions
-        self.bot.group_info()
-        pass
 
     def send_message(self):
         # Create a new window for the task
@@ -200,6 +204,7 @@ class TelegramBotGUI:
         send_to_mutual_contact = tk.BooleanVar()
 
 
+        #function to update  recipients of the message when the checkbutton is clicked
         def update_list():
             if send_to_all.get():
                 print(self.users)
@@ -210,21 +215,27 @@ class TelegramBotGUI:
             elif send_to_mutual_contact.get():
                 recipient_text.delete("1.0", tk.END)
                 recipient_text.insert(tk.END, "\n".join(self.users))
-        self.create_checkbutton("Send to All Contacts",update_list, send_to_all,2,0, new_window)
-        self.create_checkbutton("Send to Favorites",update_list,  send_to_mutual_contact,3,0, new_window)
+        self.create_checkbutton("Send to All users",update_list, send_to_all,2,0, new_window)
+        self.create_checkbutton("Send to safe users (safe from ban)",update_list,  send_to_mutual_contact,3,0, new_window)
 
         recipient_text = self.create_text(40, 10,4,  0, new_window)
         message_text = self.create_text(40, 10,4,  1, new_window)
 
+        # callback function to update the information label
         def on_update(result):
             information.config(text=ar.display_arabic_text(f"{result}"))
+
+        # function to start the process
         def start():
+            # get the recipients and the message
             recipients = recipient_text.get("1.0", tk.END).strip().split('\n')
+            # get the message
             message = message_text.get("1.0", tk.END)
 
             if not recipients  or not message.strip():
                 messagebox.showwarning("Input Error", "All fields must be filled out")
                 return
+            # start the process of sending the message using the bot object and  async_handler to not block the main thread
             async_handler(self.bot.send_message(recipients, message.strip(), on_update))
 
         self.row_index += 12

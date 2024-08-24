@@ -56,17 +56,45 @@ class TelegramBot:
         await call_py.start()
         global running
         running = True
+        list_to_save = []
         while running:
             participants = await call_py.get_participants(chat_id)
-            callback(len(participants))
-            print(f"Participants: {len(participants)}")
+            callback(f'{len(participants)}'  + " participants in the voice chat")
+            for participant in participants:
+                id = participant.user_id
+                list_to_save.append(id)
             if len(participants) == 0:
                 running = False
             await asyncio.sleep(4)
         ut.show_info("Presence taking done")
         print("Presence taking done")
+        # remove duplicates
+        list_to_save = list(dict.fromkeys(list_to_save))
+
+        with open("presence.csv", "w") as file:
+            file.write("User ID, First Name, Last Name, Username \n")
+            for id in list_to_save:
+                user = self.users[id]
+                file.write(f"{user['id']}, {user['first_name']}, {user['last_name']}, {user['username']}  \n")
+        callback("Presence saved to presence.csv")
 
     @async_handler
-    async def export_users(self, count):
-        participants = await self.client.get_participants(self.group)
-        return {user.id: user.username or user.id for user in participants}
+    async def export_users(self , callback):
+        #TODO: switch from csv to xlsx (excel) file
+        with open("users_info.csv", "w") as file:
+            # add group info to the file
+            file.write(f"Group ID: {self.group.id}\n")
+            file.write(f"Group Title: {self.group.title}\n")
+            file.write(f"Group Username: {self.group.username}\n")
+            file.write(f"Group Members: {self.group.participants_count}\n")
+
+            file.write("User ID, First Name, Last Name, Username , مشرف , إملانية الإرسال دون حظر , التفاعل في المجموعة\n")
+
+            # seif.users is a dict with the user id as the key and the user info as the value
+            #TODO : add the user interaction in the group
+            for id in self.users:
+                user = self.users[id]
+                file.write(f"{user['id']}, {user['first_name']}, {user['last_name']}, {user['username']} , {user['is_admin']} , {user['safe_to_send']} ,  0  \n")
+
+        callback("Users exported to users.csv")
+        ut.show_info("Users exported to users.csv")
