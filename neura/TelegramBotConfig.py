@@ -210,16 +210,22 @@ class TelegramBotConfig:
                 is_admin = False
                 safe_to_send = True
             else:
+                # this part only work in production mode because it's very slow
                 if isinstance( participant.participant , ChannelParticipantCreator) or isinstance( participant.participant , ChannelParticipantAdmin):
                     is_admin = True
                 else:
                     is_admin = False
                 user = await self.admin.get_entity(participant.id)
+
+                #TODO: we need an algorithm to check if the user is safe to send message without being blocked
                 messages = await self.admin.get_messages(user, limit=1)
                 if messages.total > 0:
                     safe_to_send = True
                 else:
                     safe_to_send = False
+
+            # since telegram client work with user id not with username
+            # se use the user id as key in the dictionary to store the user info
             users[participant.id] = {
                     "id": participant.id,
                     "username": participant.username,
@@ -227,6 +233,9 @@ class TelegramBotConfig:
                     "last_name": participant.last_name,
                     "is_admin": is_admin,
                     "safe_to_send": safe_to_send,
+                # "user_interaction": 0,
+                # it's better to not store the user_interaction in the dictionary because it's not necessary and it's very slow to update it
+                # same thing for sace_to_send
                 }
         return users
 
