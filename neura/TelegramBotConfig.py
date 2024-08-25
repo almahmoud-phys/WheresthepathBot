@@ -17,11 +17,12 @@ class TelegramBotConfig:
     CONFIG_FILE = Constants.CONFIG_FILE
 
     def __init__(self, root):
+        # ceate defuat directory if not exist
+        if not os.path.exists(Constants.DEFAULT_DIRICTORY):
+            os.makedirs(Constants.DEFAULT_DIRICTORY)
+
+
         self.root = root
-        self.splash = tk.Toplevel()
-        self.splash.overrideredirect(
-            True
-        )  # Remove window decorations (title bar, etc.)
 
         self.loop = asyncio.get_event_loop()
 
@@ -52,7 +53,6 @@ class TelegramBotConfig:
             # check if all the required keys are present
             if not all(key in self.config for key in ["api_id", "api_hash", "phone"]):
                 self.setup()
-            self.splash.destroy()
         else:
             # first time to run the bot
             # show the setup window
@@ -70,9 +70,13 @@ class TelegramBotConfig:
         self.save_config()
 
     def setup(self):
-        # Set the splash screen size and position
+        print("Setting up the bot...")
+        # start a window to ask for the api_id, api_hash, and phone
+        self.splash = tk.Toplevel()
+        self.splash.overrideredirect(
+            True
+        )  # Remove window decorations (title bar, etc.)
 
-        self.root.wait_window(self.splash)
         screen_width = self.splash.winfo_screenwidth()
         screen_height = self.splash.winfo_screenheight()
         splash_width = 600
@@ -131,6 +135,7 @@ class TelegramBotConfig:
         )
         submit_button.grid(row=3, column=0, columnspan=2, pady=20)
 
+        self.root.wait_window(self.splash)
         # Center the window on the screen
         # self.splash.eval("tk::PlaceWindow . center")
 
