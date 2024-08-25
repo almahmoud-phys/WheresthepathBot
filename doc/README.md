@@ -18,16 +18,31 @@ first you need API keys ([here](https://core.telegram.org/api/obtaining_api_id))
 
 ## Contribution
 
-to add new features only two files need to be modified : All gui should be in [TelegramBotGUI](./neura/TelegramBotGUI.py) and work with API in [TelegramBot](./neura/TelegramBot.py)
+To add new features :
+- All gui should be in [TelegramBotGUI](./neura/TelegramBotGUI.py)
+- work with API in [TelegramBot](./neura/TelegramBot.py)
+- add exported files should be in `Constant.DEFAULT_DIRICTORY`
+- all files that ship with the app should be in assets folder
 
-
-**Note** ; Don't modify files other than  [TelegramBotGUI](./neura/TelegramBotGUI.py) and [TelegramBot](./neura/TelegramBot.py) without contacting the owner
+**Note** : Please Don't modify files other than  [TelegramBotGUI](./neura/TelegramBotGUI.py) and [TelegramBot](./neura/TelegramBot.py) without contacting the owner
 
 
 the TelegramBot Class give three objects :
 - admin : is a [ Telethon client ](https://docs.telethon.dev/en/stable/modules/client.html) , you can do all telegram tasks with it (send messages , make phone calls .....)
-- group  : the group that you choose to work with
+- group  : is a [Telethon group](https://docs.telethon.dev/en/stable/concepts/chats-vs-channels.html#chats) the group that you choose to work with
 - users : a dictionary Constants all users in that group
+```python
+# participant is a member in the group
+            users[participant.id] = {
+                    "id": participant.id,
+                    "username": participant.username,
+                    "first_name": participant.first_name,
+                    "last_name": participant.last_name,
+                    "is_admin": is_admin,
+                    "safe_to_send": safe_to_send,
+                # "user_interaction": 0,
+                }
+```
 
 with these three objects you can do basically anything in telegram
 
