@@ -5,8 +5,11 @@ from async_tkinter_loop import async_handler
 from pytgcalls import PyTgCalls
 from telethon import utils
 
-import neura.utils as ut
+# openpyxl
+import openpyxl
 
+import neura.utils as ut
+import neura.Constants as Constants
 
 class TelegramBot:
     def __init__(self, client, group, users):
@@ -71,17 +74,25 @@ class TelegramBot:
         # remove duplicates
         list_to_save = list(dict.fromkeys(list_to_save))
 
-        with open("presence.csv", "w") as file:
+
+        # use default directory to save the file
+        file_path = Constants.DEFAULT_DIRICTORY + "presence.csv"
+        with open(file_path, "w") as file:
             file.write("User ID, First Name, Last Name, Username \n")
             for id in list_to_save:
                 user = self.users[id]
                 file.write(f"{user['id']}, {user['first_name']}, {user['last_name']}, {user['username']}  \n")
-        callback("Presence saved to presence.csv")
+
+        # Update the UI and invoke the callback function on finish
+        callback(f"Presence saved to {file_path}")
 
     @async_handler
     async def export_users(self , callback):
         #TODO: switch from csv to xlsx (excel) file
-        with open("users_info.csv", "w") as file:
+
+        # use default directory to save the file
+        file_path = Constants.DEFAULT_DIRICTORY + "users_info.csv"
+        with open(file_path, "w") as file:
             # add group info to the file
             file.write(f"Group ID: {self.group.id}\n")
             file.write(f"Group Title: {self.group.title}\n")
@@ -96,5 +107,5 @@ class TelegramBot:
                 user = self.users[id]
                 file.write(f"{user['id']}, {user['first_name']}, {user['last_name']}, {user['username']} , {user['is_admin']} , {user['safe_to_send']} ,  0  \n")
 
-        callback("Users exported to users.csv")
-        ut.show_info("Users exported to users.csv")
+        callback(f"Users exported to {file_path}")
+        ut.show_info(f"Users exported to {file_path}")
