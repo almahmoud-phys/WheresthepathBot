@@ -32,7 +32,4 @@ if __name__ == "__main__":
     gui = TelegramBotGUI(root, bot)
     # root.wait_window(gui.root)
 
-    # root.mainloop()
     async_mainloop(root)
-    # one root tk object
-    # https://www.google.com/search?client=firefox-b-d&q=use+many+root+in+tk

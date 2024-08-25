@@ -1,5 +1,6 @@
 arabic_reshaper==3.0.0
 async_tkinter_loop==0.9.3
+openpyxl==3.1.5
 Pillow==10.4.0
 py_tgcalls==2.0.3b2
 Telethon==1.36.0
