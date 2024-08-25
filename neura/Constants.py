@@ -3,8 +3,8 @@ from pathlib import Path
 
 
 # Where is The Way  directory
-DEFAULT_DIRICTORY = str(Path.home() / "WTW")
-CONFIG_FILE = "config.json"
+DEFAULT_DIRICTORY = str(Path.home() / "WTW") + "/"
+CONFIG_FILE = DEFAULT_DIRICTORY + "config.json"
 
 
 # Test constants
