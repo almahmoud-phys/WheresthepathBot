@@ -24,7 +24,7 @@ if __name__ == "__main__":
 
     if not Constants.DEBUG:
         # don't show splash in debug mode
-        splash = SplashScreen(root, "splash_image.jpg", display_time=3000)
+        splash = SplashScreen(root, "./assets/splash_image.jpg", display_time=3000)
         root.wait_window(splash.splash)
 
     bot = TelegramBotConfig(root)
