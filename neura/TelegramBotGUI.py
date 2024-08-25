@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import asyncio
 import tkinter as tk
 from tkinter import ttk
@@ -19,6 +21,12 @@ from async_tkinter_loop import async_handler
 
 class TelegramBotGUI:
     def __init__(self, root, bot):
+        """
+        Initializes the TelegramBotGUI instance.
+
+        :param root: The root Tkinter window.
+        :param bot: An instance of the TelegramBotConfig class or None.
+        """
         self.loop = asyncio.get_event_loop()
         # self.root = root
 
@@ -38,10 +46,11 @@ class TelegramBotGUI:
         self.create_widgets()
 
     def styles(self):
+        """
+        Initializes the styles for the application, including window size, grid configuration,
+        and various color and font settings for widgets.
+        """
         #TODO: we need a good lock and feel for the app
-        """
-        Initializes the styles for the application.
-        """
         # Set a minsize for the window, and place it in the middle
         self.root.update()
         self.root.minsize(self.root.winfo_width(), self.root.winfo_height())
@@ -88,6 +97,10 @@ class TelegramBotGUI:
         # self.root.configure(bg=self.background_color)
 
     def create_widgets(self):
+        """
+        Initializes and arranges the main application widgets in the window.
+        This includes labels, buttons, and separators.
+        """
         #TODO : switch to tabs
         #TODO : add a menu bar
         #TODO : translate the text to arabic
@@ -137,6 +150,10 @@ class TelegramBotGUI:
 
     # Button click handlers
     def export_users(self):
+        """
+        Handles exporting user information to an Excel file.
+        Opens a new window to manage the export process.
+        """
         #TODO: Create a new window for the task
 
         # reset the row index
@@ -165,8 +182,10 @@ class TelegramBotGUI:
         pass
 
     def take_presence(self):
-
-
+        """
+        Handles recording the presence of users in a group call.
+        Opens a new window to manage the presence-taking process.
+        """
         # new windows
         new_window = tk.Toplevel(self.root)
         for i in range(2):
@@ -182,13 +201,26 @@ class TelegramBotGUI:
 
         # function to start the process
         def start():
+            step = combobox.get()
             # start the process of taking the presence using the bot object and  async_handler to not block the main thread
-            async_handler(self.bot.take_presence(on_update ))
+            async_handler(self.bot.take_presence(step , on_update ))
 
-        self.create_button("Start", start, 0 , new_window)
+        self.row_index += 6
+        # Create the drop-down menu to choose the step number رقم المدارسة
+        combobox = ttk.Combobox(new_window, values=[x for x in range(-1, 14)])
+        combobox.set(ar.display_arabic_text("إختر رقم الخطوة"))  # Set default text
+        combobox.grid(row=self.row_index, column=0, padx=10, pady=5,  sticky="ew")
+
+        self.row_index += 1
+
+        self.create_button("بدأ تسجيل الحضور", start, 0 , new_window)
         self.create_button("Stop",new_window.destroy, 1,new_window)
 
     def send_message(self):
+        """
+        Handles sending messages to multiple users.
+        Opens a new window to input recipients and message content.
+        """
         # Create a new window for the task
         new_window = tk.Toplevel(self.root)
         self.row_index = 0

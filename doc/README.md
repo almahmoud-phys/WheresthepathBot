@@ -26,6 +26,7 @@ To add new features :
 
 **Note** : Please Don't modify files other than  [TelegramBotGUI](./neura/TelegramBotGUI.py) and [TelegramBot](./neura/TelegramBot.py) without contacting the owner
 
+The TelegramBot class is designed to interact with a Telegram group using the Telethon library. It provides functionality to send messages, take attendance during voice chats, and export user information. The class is designed to work asynchronously and integrates with Tkinter using the [ async_tkinter_loop ](https://github.com/insolor/async-tkinter-loop) library to ensure that long-running operations do not block the main UI thread.
 
 the TelegramBot Class give three objects :
 - admin : is a [ Telethon client ](https://docs.telethon.dev/en/stable/modules/client.html) , you can do all telegram tasks with it (send messages , make phone calls .....)

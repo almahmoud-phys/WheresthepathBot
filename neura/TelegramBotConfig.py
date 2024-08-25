@@ -234,8 +234,8 @@ class TelegramBotConfig:
             users[participant.id] = {
                     "id": participant.id,
                     "username": participant.username,
-                    "first_name": participant.first_name,
-                    "last_name": participant.last_name,
+                    "first_name": participant.first_name if participant.first_name is not None else "",
+                    "last_name": participant.last_name if participant.last_name is not None else "",
                     "is_admin": is_admin,
                     "safe_to_send": safe_to_send,
                 # "user_interaction": 0,
