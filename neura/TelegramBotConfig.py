@@ -39,6 +39,7 @@ class TelegramBotConfig:
         )
         self.loop.run_until_complete(self.start_client())
         self.group = self.loop.run_until_complete(self.get_group())
+        print(f"the group is {self.group.title}")
         if Constants.DEBUG:
             print(f"the group is {self.group.title}")
         self.users = self.loop.run_until_complete(self.get_users_list())
@@ -193,18 +194,21 @@ class TelegramBotConfig:
         #        groups.append(i)
         #        continue
         if Constants.DEBUG:
+            print("groups:", groups)
             for g in groups:
                 if utils.get_peer_id(g) == Constants.GROUP_ID:
                     return  g
         titles = []
         for g in groups:
             titles.append(g.title)
-        selected = SingleChoiceDialog(self.root, "Choose a group ", titles)
+        selected = SingleChoiceDialog(self.root, "Choose a group ", titles).choice
+        print("selected:", selected)
         for g in groups:
             if g.title == selected:
                 return g
 
     async def get_users_list(self):
+        print(self.group.title)
         users = {}
         all_participants = await self.admin.get_participants(
             self.group, aggressive=True
