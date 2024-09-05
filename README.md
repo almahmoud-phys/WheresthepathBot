@@ -9,3 +9,8 @@ you can read documentation here [doc](./doc/README.md)
 - [ ] use **pyistaler** to create a standalone executable file
 - [ ] Main Window ues Tabs insted of buttons
 
+# New Fork Features
+I am going to use apply the following changes:
+- Use Flet to create a new GUI instead of tkinter
+- Use Flet to create the standalone executable file
+- Apply Tabs to the main window
